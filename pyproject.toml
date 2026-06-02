@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "amiii"
+version = "0.1.0"
+description = "AMIII modular voice-controlled AI operating assistant."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "AMIII Contributors" }
+]
+dependencies = []
+
+[project.optional-dependencies]
+voice = [
+  "faster-whisper>=1.0.0",
+  "piper-tts>=1.2.0",
+  "sounddevice>=0.4.6"
+]
+dev = [
+  "pytest>=8.0.0"
+]
+
+[project.scripts]
+amiii = "amiii.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
