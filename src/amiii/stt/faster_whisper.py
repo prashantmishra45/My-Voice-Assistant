@@ -10,9 +10,10 @@ from amiii.errors import DependencyMissingError
 class FasterWhisperTranscriber:
     """Transcribe local audio files with faster-whisper."""
 
-    def __init__(self, model_size: str = "base", device: str = "cpu") -> None:
+    def __init__(self, model_size: str = "base", device: str = "cpu", compute_type: str = "int8") -> None:
         self._model_size = model_size
         self._device = device
+        self._compute_type = compute_type
         self._model = None
 
     def transcribe(self, audio_path: Path) -> str:
@@ -33,6 +34,6 @@ class FasterWhisperTranscriber:
                 "faster-whisper is required for speech-to-text. "
                 "Install it with: python -m pip install faster-whisper"
             ) from exc
-        self._model = WhisperModel(self._model_size, device=self._device)
+        self._model = WhisperModel(self._model_size, device=self._device, compute_type=self._compute_type)
         return self._model
 

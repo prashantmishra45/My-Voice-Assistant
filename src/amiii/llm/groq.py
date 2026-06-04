@@ -40,6 +40,9 @@ class GroqChatProvider:
             headers={
                 "Authorization": f"Bearer {self._api_key}",
                 "Content-Type": "application/json",
+                # Cloudflare (which fronts api.groq.com) blocks the default
+                # "Python-urllib/x.x" user agent with a 403 1010 error.
+                "User-Agent": "Mozilla/5.0 (compatible; AMIII/0.1)",
             },
             method="POST",
         )
