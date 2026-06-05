@@ -1,6 +1,7 @@
 """Command-line entrypoint for AMIII."""
 
 from __future__ import annotations
+from amiii.tools.applications import ApplicationLauncher
 
 import argparse
 from pathlib import Path
@@ -67,6 +68,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     return parser
 
+def try_application_command(prompt: str) -> str | None:
+    """Handle simple application-launch commands."""
+
+    text = prompt.lower().strip()
+
+    launcher = ApplicationLauncher()
+
+    if text.startswith("open "):
+        app_name = text.replace("open ", "", 1).strip()
+
+        try:
+            launcher.open_application(app_name)
+            return f"Opening {app_name}."
+        except ValueError:
+            return None
+
+    return None
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
@@ -113,6 +132,14 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         print(f"You said: {prompt}")
+
+        tool_response = try_application_command(prompt)
+
+        if tool_response:
+            voice_speaker.speak(tool_response)
+            print(f"AMIII: {tool_response}")
+            return 0
+
         response = engine.run_text_turn(prompt, speak=True)
         print(f"AMIII: {response.content}")
         return 0

@@ -1,11 +1,43 @@
-"""Future application launcher module."""
+"""Windows application launcher."""
 
 from __future__ import annotations
 
+import os
+
 
 class ApplicationLauncher:
-    """Placeholder for v0.3 application launching."""
+    """Launch common Windows applications."""
 
-    def open_application(self, name: str) -> None:
-        raise NotImplementedError("Application launching is planned for v0.3.")
+    APPS = {
+        "chrome": "chrome",
+        "google chrome": "chrome",
+        "vscode": "code",
+        "vs code": "code",
+        "code": "code",
+        "notepad": "notepad",
+        "calculator": "calc",
+        "calc": "calc",
+    }
 
+    def open_application(self, name: str) -> str:
+        """
+        Open a supported Windows application.
+
+        Args:
+            name: Application name
+
+        Returns:
+            Status message
+        """
+
+        app = self.APPS.get(name.lower().strip())
+
+        if not app:
+            raise ValueError(
+                f"Unsupported application: {name}. "
+                f"Supported applications: {', '.join(self.APPS.keys())}"
+            )
+
+        os.system(f"start {app}")
+
+        return f"Opened {name}"
