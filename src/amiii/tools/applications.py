@@ -17,6 +17,11 @@ class ApplicationLauncher:
         "notepad": "notepad",
         "calculator": "calc",
         "calc": "calc",
+
+        "downloads": "explorer shell:Downloads",
+        "documents": "explorer shell:Personal",
+        "desktop": "explorer shell:Desktop",
+        "pictures": "explorer shell:Pictures",
     }
 
     def open_application(self, name: str) -> str:
