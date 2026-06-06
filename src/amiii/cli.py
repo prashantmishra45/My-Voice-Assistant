@@ -118,30 +118,44 @@ def main(argv: list[str] | None = None) -> int:
             transcriber=transcriber,
             speaker=voice_speaker,
         )
+        print("AMIII is listening. Say 'goodbye' to exit.")
 
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
-            audio_path = Path(temp_file.name)
-        print(f"Recording for {args.duration} seconds... (speak now)")
-        recorder.record(audio_path, args.duration)
+        while True:
 
-        print("Transcribing...")
-        prompt = transcriber.transcribe(audio_path)
+            with tempfile.NamedTemporaryFile(
+                suffix=".wav",
+                delete=False
+            ) as temp_file:
+                audio_path = Path(temp_file.name)
 
-        if not prompt.strip():
-            print("(Nothing was heard — check your microphone and try again.)")
-            return 0
+            print(f"\nRecording for {args.duration} seconds...")
+            recorder.record(audio_path, args.duration)
 
-        print(f"You said: {prompt}")
+            print("Transcribing...")
+            prompt = transcriber.transcribe(audio_path)
 
-        tool_response = try_application_command(prompt)
+            if not prompt.strip():
+                print("(Nothing was heard.)")
+                continue
 
-        if tool_response:
-            voice_speaker.speak(tool_response)
-            print(f"AMIII: {tool_response}")
-            return 0
+            print(f"You said: {prompt}")
 
-        response = engine.run_text_turn(prompt, speak=True)
-        print(f"AMIII: {response.content}")
+            if "goodbye" in prompt.lower():
+                voice_speaker.speak("Goodbye. Have a nice day.")
+                print("AMIII: Goodbye.")
+                break
+
+            tool_response = try_application_command(prompt)
+
+            if tool_response:
+                voice_speaker.speak(tool_response)
+                print(f"AMIII: {tool_response}")
+                continue
+
+            response = engine.run_text_turn(prompt, speak=True)
+
+            print(f"AMIII: {response.content}")
+
         return 0
     except (AMIIIError, ValueError, FileNotFoundError) as exc:
         parser.exit(status=2, message=f"AMIII setup/runtime error: {exc}\n")
