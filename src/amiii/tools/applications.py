@@ -6,6 +6,8 @@ import os
 import subprocess
 from pathlib import Path
 from typing import Optional
+import webbrowser
+import urllib.parse
 
 
 class ApplicationLauncher:
@@ -81,3 +83,49 @@ class ApplicationLauncher:
 
         # Then try dynamic discovery
         return self.open_dynamic_application(name)
+
+    def google_search(self, query: str) -> str:
+        """
+        Search Google using the default browser.
+        """
+        encoded_query = urllib.parse.quote(query)
+        url = f"https://www.google.com/search?q={encoded_query}"
+        webbrowser.open(url)
+        return f"Searching Google for {query}"
+
+    def open_website(self, target: str) -> str:
+        """
+        Open a specific website.
+        """
+        websites = {
+            "youtube": "https://www.youtube.com",
+            "github": "https://github.com",
+            "linkedin": "https://www.linkedin.com",
+            "gmail.com": "https://mail.google.com",
+            "gmail": "https://mail.google.com"
+        }
+        
+        clean_target = target.lower().strip()
+        url = websites.get(clean_target)
+        
+        if url:
+            webbrowser.open(url)
+            return f"Opening {target}"
+        
+        # If not in our predefined list, just do a google search or open directly if it looks like a url
+        if "." in clean_target:
+            if not clean_target.startswith("http"):
+                clean_target = f"https://{clean_target}"
+            webbrowser.open(clean_target)
+            return f"Opening {target}"
+
+        return self.google_search(target)
+
+    def play_media(self, query: str) -> str:
+        """
+        Search YouTube and open results.
+        """
+        encoded_query = urllib.parse.quote(query)
+        url = f"https://www.youtube.com/results?search_query={encoded_query}"
+        webbrowser.open(url)
+        return f"Playing {query} on YouTube"

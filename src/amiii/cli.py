@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 from amiii.tools.applications import ApplicationLauncher
+from amiii.tools.intent_router import LLMIntentRouter
+from amiii.tools.registry import ToolRegistry, RegisteredTool
+from amiii.llm.base import ChatProvider
 
 import argparse
 from pathlib import Path
@@ -68,23 +71,62 @@ def build_parser() -> argparse.ArgumentParser:
     )
     return parser
 
-def try_application_command(prompt: str) -> str | None:
-    """Handle simple application-launch commands."""
-
-    text = prompt.lower().strip()
-
+def get_tool_registry() -> ToolRegistry:
+    registry = ToolRegistry()
     launcher = ApplicationLauncher()
+    
+    registry.register(RegisteredTool(
+        name="open_application",
+        description="Open a Windows application or folder",
+        handler=launcher.open_application
+    ))
+    registry.register(RegisteredTool(
+        name="google_search",
+        description="Search Google using the default browser",
+        handler=launcher.google_search
+    ))
+    registry.register(RegisteredTool(
+        name="open_website",
+        description="Open a specific website",
+        handler=launcher.open_website
+    ))
+    registry.register(RegisteredTool(
+        name="play_media",
+        description="Search YouTube and open results for playback",
+        handler=launcher.play_media
+    ))
+    return registry
 
-    if text.startswith("open "):
-        app_name = text.replace("open ", "", 1).strip()
+def try_tool_command(
+    prompt: str,
+    chat_provider: ChatProvider,
+) -> str | None:
 
-        try:
-            launcher.open_application(app_name)
-            return f"Opening {app_name}."
-        except ValueError:
-            return None
+    router = LLMIntentRouter(chat_provider)
+    intent = router.parse(prompt)
 
-    return None
+    print(f"Detected intent: {intent}")
+    
+    if intent.action == "chat":
+        return None
+
+    registry = get_tool_registry()
+
+    try:
+        tool = registry.get(intent.action)
+        if intent.target:
+            return tool.handler(intent.target)
+        else:
+            return tool.handler()
+    except KeyError:
+        print(f"Tool {intent.action} not found in registry.")
+        return None
+    except ValueError as e:
+        print(f"Tool value error: {e}")
+        return None
+    except Exception as e:
+        print(f"Tool execution error: {e}")
+        return None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -104,6 +146,14 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.text:
             speaker = PiperSpeaker(resolved_model_path) if args.speak_text else None
+            
+            tool_response = try_tool_command(args.text, chat_provider)
+            if tool_response:
+                if speaker:
+                    speaker.speak(tool_response)
+                print(f"AMIII: {tool_response}")
+                return 0
+                
             engine = ConversationEngine(chat_provider=chat_provider, speaker=speaker)
             response = engine.run_text_turn(args.text, speak=args.speak_text)
             print(response.content)
@@ -145,7 +195,10 @@ def main(argv: list[str] | None = None) -> int:
                 print("AMIII: Goodbye.")
                 break
 
-            tool_response = try_application_command(prompt)
+            tool_response = try_tool_command(
+                prompt,
+                chat_provider
+            )
 
             if tool_response:
                 voice_speaker.speak(tool_response)
