@@ -1,9 +1,10 @@
 from amiii.tools.browser import BrowserTool
 
-tool = BrowserTool()
+if __name__ == "__main__":
+    tool = BrowserTool()
 
-result = tool.play_youtube_video(
-    "Believer Imagine Dragons"
-)
+    result = tool.play_youtube_video(
+        "Believer Imagine Dragons"
+    )
 
-print(result)
+    print(result)

@@ -123,9 +123,8 @@ class ApplicationLauncher:
 
     def play_media(self, query: str) -> str:
         """
-        Search YouTube and open results.
+        Search YouTube and play the video.
         """
-        encoded_query = urllib.parse.quote(query)
-        url = f"https://www.youtube.com/results?search_query={encoded_query}"
-        webbrowser.open(url)
-        return f"Playing {query} on YouTube"
+        from amiii.tools.browser import BrowserTool
+        browser_tool = BrowserTool()
+        return browser_tool.website_search("youtube", query)

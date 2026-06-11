@@ -11,6 +11,10 @@ from amiii.llm.base import ChatMessage, ChatProvider
 class Intent:
     action: str
     target: str | None = None
+    website: str | None = None
+    query: str | None = None
+    contact: str | None = None
+    message: str | None = None
 
 
 class LLMIntentRouter:
@@ -21,6 +25,8 @@ class LLMIntentRouter:
         "open_website",
         "play_media",
         "chat",
+        "website_search",
+        "whatsapp_message",
     }
 
     def __init__(self, chat_provider: ChatProvider):
@@ -40,6 +46,8 @@ Allowed actions:
 3. open_website
 4. play_media
 5. chat
+6. website_search
+7. whatsapp_message
 
 Rules:
 
@@ -76,6 +84,27 @@ User: Play Believer song
 
 User: Play relaxing music on YouTube
 {{"action":"play_media","target":"relaxing music"}}
+
+User: Search YouTube for Python tutorials
+{{"action":"website_search","website":"youtube","query":"Python tutorials"}}
+
+User: Search GitHub for machine learning projects
+{{"action":"website_search","website":"github","query":"machine learning projects"}}
+
+User: Search LinkedIn for internships
+{{"action":"website_search","website":"linkedin","query":"internships"}}
+
+User: Search Amazon for Logitech mouse
+{{"action":"website_search","website":"amazon","query":"Logitech mouse"}}
+
+User: Message Prashant on WhatsApp saying Hello
+{{"action":"whatsapp_message","contact":"Prashant","message":"Hello"}}
+
+User: Send a WhatsApp message to John: Are you coming today?
+{{"action":"whatsapp_message","contact":"John","message":"Are you coming today?"}}
+
+User: Open WhatsApp and message Mom: I will be late
+{{"action":"whatsapp_message","contact":"Mom","message":"I will be late"}}
 
 User: What is the capital of India?
 {{"action":"chat"}}
@@ -124,7 +153,11 @@ Now classify this request:
 
             return Intent(
                 action=action,
-                target=data.get("target")
+                target=data.get("target"),
+                website=data.get("website"),
+                query=data.get("query"),
+                contact=data.get("contact"),
+                message=data.get("message")
             )
 
         except Exception as e:

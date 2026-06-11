@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from amiii.tools.applications import ApplicationLauncher
+from amiii.tools.browser import BrowserTool
 from amiii.tools.intent_router import LLMIntentRouter
 from amiii.tools.registry import ToolRegistry, RegisteredTool
 from amiii.llm.base import ChatProvider
@@ -74,6 +75,7 @@ def build_parser() -> argparse.ArgumentParser:
 def get_tool_registry() -> ToolRegistry:
     registry = ToolRegistry()
     launcher = ApplicationLauncher()
+    browser_tool = BrowserTool()
     
     registry.register(RegisteredTool(
         name="open_application",
@@ -95,6 +97,16 @@ def get_tool_registry() -> ToolRegistry:
         description="Search YouTube and open results for playback",
         handler=launcher.play_media
     ))
+    registry.register(RegisteredTool(
+        name="website_search",
+        description="Search a website and click the first result",
+        handler=browser_tool.website_search
+    ))
+    registry.register(RegisteredTool(
+        name="whatsapp_message",
+        description="Send a WhatsApp message to a named contact with verification",
+        handler=browser_tool.send_whatsapp_message
+    ))
     return registry
 
 def try_tool_command(
@@ -114,7 +126,11 @@ def try_tool_command(
 
     try:
         tool = registry.get(intent.action)
-        if intent.target:
+        if intent.action == "website_search":
+            return tool.handler(website=intent.website, query=intent.query)
+        elif intent.action == "whatsapp_message":
+            return tool.handler(contact=intent.contact, message=intent.message)
+        elif intent.target:
             return tool.handler(intent.target)
         else:
             return tool.handler()
